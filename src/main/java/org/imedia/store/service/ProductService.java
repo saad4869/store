@@ -23,4 +23,12 @@ public interface ProductService {
      * @return list of product DTOs
      */
     List<ProductDto> getProductsBySkus(List<String> skus);
+
+    /**
+     * Create product
+     *
+     * @param productDto the product DTO with data
+     * @return the created product DTO
+     */
+    ProductDto createProduct(ProductDto productDto);
 }

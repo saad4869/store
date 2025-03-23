@@ -3,9 +3,13 @@ package org.imedia.store.controller;
 import org.imedia.store.domain.product.ProductDto;
 import org.imedia.store.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -60,5 +64,15 @@ public class ProductController {
 
         List<ProductDto> products = productService.getProductsBySkus(skus);
         return ResponseEntity.ok(products);
+    }
+
+    /**
+     * Create Product Endpoint
+     */
+    @PostMapping("/product")
+    public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto productDto) {
+
+        ProductDto createdProduct = productService.createProduct(productDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
     }
 }

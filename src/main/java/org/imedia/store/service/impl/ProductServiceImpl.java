@@ -1,5 +1,6 @@
 package org.imedia.store.service.impl;
 
+import jakarta.transaction.Transactional;
 import org.imedia.store.db.entity.Product;
 import org.imedia.store.db.repository.ProductRepository;
 import org.imedia.store.domain.product.ProductDto;
@@ -34,6 +35,13 @@ public class ProductServiceImpl implements ProductService {
         return convertToDto(product);
     }
 
+    /**
+     * Get products by SKUs
+     *
+     * @param skus the list of product skus
+     * @return the list of product DTOs
+     */
+
     @Override
     public List<ProductDto> getProductsBySkus(List<String> skus) {
         List<Product> products = productRepository.findBySkuIn(skus);
@@ -41,6 +49,20 @@ public class ProductServiceImpl implements ProductService {
         return products.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
+    }
+    /**
+     * create product
+     *
+     * @param productDto the data of the new product
+     * @return the created product DTO
+     */
+
+    @Transactional
+    @Override
+    public ProductDto createProduct(ProductDto productDto) {
+        Product product = convertToEntity(productDto);
+        Product savedProduct = productRepository.save(product);
+        return convertToDto(savedProduct);
     }
 
     /**
@@ -53,6 +75,19 @@ public class ProductServiceImpl implements ProductService {
                 product.getDescription(),
                 product.getPrice(),
                 product.getStockQuantity()
+        );
+    }
+
+    /**
+     * Convert ProductDto to Product entity
+     */
+    private Product convertToEntity(ProductDto productDto) {
+        return new Product(
+                productDto.getSku(),
+                productDto.getName(),
+                productDto.getDescription(),
+                productDto.getPrice(),
+                productDto.getStockQuantity()
         );
     }
 }

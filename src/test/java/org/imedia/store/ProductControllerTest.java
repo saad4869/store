@@ -1,5 +1,6 @@
 package org.imedia.store;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.imedia.store.controller.ProductController;
 import org.imedia.store.domain.product.ProductDto;
 import org.imedia.store.domain.product.ProductNotFoundException;
@@ -18,10 +19,12 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -34,6 +37,8 @@ public class ProductControllerTest {
 
     @Autowired
     private ProductService productService;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     static class TestConfig {
         @Bean
@@ -103,5 +108,38 @@ public class ProductControllerTest {
                 .andExpect(jsonPath("$[0].sku", is("123")))
                 .andExpect(jsonPath("$[1].sku", is("4567")))
                 .andExpect(jsonPath("$[2].sku", is("8901")));
+    }
+
+    @Test
+    public void testCreateProduct_Success() throws Exception {
+        // Arrange
+        ProductDto inputDto = new ProductDto(
+                "NEW123",
+                "New Product",
+                "New Description",
+                new BigDecimal("24.99"),
+                50
+        );
+
+        ProductDto savedDto = new ProductDto(
+                "NEW123",
+                "New Product",
+                "New Description",
+                new BigDecimal("24.99"),
+                50
+        );
+
+        when(productService.createProduct(any(ProductDto.class))).thenReturn(savedDto);
+
+        // Act & Assert
+        mockMvc.perform(post("/product")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(inputDto)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.sku", is("NEW123")))
+                .andExpect(jsonPath("$.name", is("New Product")))
+                .andExpect(jsonPath("$.description", is("New Description")))
+                .andExpect(jsonPath("$.price", is(24.99)))
+                .andExpect(jsonPath("$.stockQuantity", is(50)));
     }
 }
