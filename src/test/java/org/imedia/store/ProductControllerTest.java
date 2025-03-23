@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.imedia.store.controller.ProductController;
 import org.imedia.store.domain.product.ProductDto;
 import org.imedia.store.domain.product.ProductNotFoundException;
+import org.imedia.store.domain.product.ProductPatchDto;
 import org.imedia.store.service.ProductService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +22,11 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -39,6 +42,7 @@ public class ProductControllerTest {
     private ProductService productService;
     @Autowired
     private ObjectMapper objectMapper;
+
 
     static class TestConfig {
         @Bean
@@ -141,5 +145,58 @@ public class ProductControllerTest {
                 .andExpect(jsonPath("$.description", is("New Description")))
                 .andExpect(jsonPath("$.price", is(24.99)))
                 .andExpect(jsonPath("$.stockQuantity", is(50)));
+    }
+
+    @Test
+    public void testPatchedProduct_Success() throws Exception {
+        // Arrange
+        String testSku = "Test SKU";
+        ProductPatchDto patchDto = new ProductPatchDto(
+                "Updated Product",
+                "updated Description",
+                new BigDecimal("99.99")
+        );
+
+        ProductDto patchedDto = new ProductDto(
+                testSku,
+                "Updated Product",
+                "updated Description",
+                new BigDecimal("99.99"),
+                50
+        );
+
+
+        when(productService.patchProduct(eq(testSku),any(ProductPatchDto.class))).thenReturn(patchedDto);
+
+        // Act & Assert
+        mockMvc.perform(patch("/product/{sku}", testSku)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(patchedDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sku", is(testSku)))
+                .andExpect(jsonPath("$.name", is("Updated Product")))
+                .andExpect(jsonPath("$.description", is("updated Description")))
+                .andExpect(jsonPath("$.price", is(99.99)))
+                .andExpect(jsonPath("$.stockQuantity", is(50)));
+    }
+
+    @Test
+    public void testUpdateProduct_NotFound() throws Exception {
+        // Arrange
+        String nonExistentSku = "NONEXISTENT";
+        ProductPatchDto updateDto = new ProductPatchDto(
+                "Updated Name",
+                "Updated Description",
+                new BigDecimal("49.99")
+        );
+
+        when(productService.patchProduct(eq(nonExistentSku), any(ProductPatchDto.class)))
+                .thenThrow(new ProductNotFoundException(nonExistentSku));
+
+        // Act & Assert
+        mockMvc.perform(patch("/product/{sku}", nonExistentSku)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateDto)))
+                .andExpect(status().isNotFound());
     }
 }

@@ -5,6 +5,7 @@ import org.imedia.store.db.entity.Product;
 import org.imedia.store.db.repository.ProductRepository;
 import org.imedia.store.domain.product.ProductDto;
 import org.imedia.store.domain.product.ProductNotFoundException;
+import org.imedia.store.domain.product.ProductPatchDto;
 import org.imedia.store.service.ProductService;
 import org.springframework.stereotype.Service;
 
@@ -63,6 +64,25 @@ public class ProductServiceImpl implements ProductService {
         Product product = convertToEntity(productDto);
         Product savedProduct = productRepository.save(product);
         return convertToDto(savedProduct);
+    }
+
+    @Transactional
+    @Override
+    public ProductDto patchProduct(String sku,ProductPatchDto productPatchDto) {
+        Product product = productRepository.findById(sku)
+                .orElseThrow(() -> new ProductNotFoundException(sku));
+        if(productPatchDto.getName()!=null) {
+            product.setName(productPatchDto.getName());
+        }
+        if(productPatchDto.getDescription()!=null) {
+            product.setDescription(productPatchDto.getDescription());
+        }
+        if(productPatchDto.getPrice()!=null) {
+            product.setPrice(productPatchDto.getPrice());
+        }
+
+        Product patchedProduct = productRepository.save(product);
+        return convertToDto(patchedProduct);
     }
 
     /**

@@ -1,12 +1,14 @@
 package org.imedia.store.controller;
 
 import org.imedia.store.domain.product.ProductDto;
+import org.imedia.store.domain.product.ProductPatchDto;
 import org.imedia.store.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -74,5 +76,17 @@ public class ProductController {
 
         ProductDto createdProduct = productService.createProduct(productDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
+    }
+
+    /**
+     * partially update Product Endpoint
+     */
+    @PatchMapping("/product/{sku}")
+    public ResponseEntity<ProductDto> patchProduct(
+            @PathVariable String sku,
+            @RequestBody ProductPatchDto productPatchDto) {
+
+        ProductDto patchedProduct = productService.patchProduct(sku,productPatchDto);
+        return ResponseEntity.ok(patchedProduct);
     }
 }
