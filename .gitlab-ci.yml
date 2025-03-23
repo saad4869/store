@@ -1,0 +1,58 @@
+stages:
+  - build
+  - test
+  - package
+  - docker
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+  DOCKER_IMAGE_NAME: "store-product-api"
+
+# Cache downloaded dependencies and plugins between builds
+cache:
+  paths:
+    - .m2/repository/
+
+# Build stage: compile the project
+build:
+  stage: build
+  image: maven:3.8.4-openjdk-17-slim
+  script:
+    - mvn compile
+
+# Test stage: run the unit tests
+test:
+  stage: test
+  image: maven:3.8.4-openjdk-17-slim
+  script:
+    - mvn test
+  artifacts:
+    reports:
+      junit:
+        - target/surefire-reports/TEST-*.xml
+
+# Package stage: create the deployable artifact
+package:
+  stage: package
+  image: maven:3.8.4-openjdk-17-slim
+  script:
+    - mvn package -DskipTests
+  artifacts:
+    paths:
+      - target/*.jar
+    expire_in: 1 week
+  only:
+    - main
+    - master
+
+# Docker stage: build and push the Docker image
+docker:
+  stage: docker
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker build -t $DOCKER_IMAGE_NAME:$CI_COMMIT_SHORT_SHA -t $DOCKER_IMAGE_NAME:latest .
+  only:
+    - main
+    - master
