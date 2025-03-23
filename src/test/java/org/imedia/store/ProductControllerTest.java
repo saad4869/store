@@ -13,8 +13,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -73,5 +77,29 @@ public class ProductControllerTest {
         mockMvc.perform(get("/product/{sku}", nonExistentSku)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testGetProductsBySkus_Success() throws Exception {
+        // Arrange
+        List<String> testSkus = Arrays.asList("123", "4567", "8901");
+
+        ProductDto product1 = new ProductDto("123", "Product 1", "Description 1", new BigDecimal("19.99"));
+        ProductDto product2 = new ProductDto("4567", "Product 2", "Description 2", new BigDecimal("29.99"));
+        ProductDto product3 = new ProductDto("8901", "Product 3", "Description 3", new BigDecimal("39.99"));
+
+        List<ProductDto> products = Arrays.asList(product1, product2, product3);
+
+        when(productService.getProductsBySkus(anyList())).thenReturn(products);
+
+        // Act & Assert
+        mockMvc.perform(get("/products")
+                        .param("skus", "123,4567,8901")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(3)))
+                .andExpect(jsonPath("$[0].sku", is("123")))
+                .andExpect(jsonPath("$[1].sku", is("4567")))
+                .andExpect(jsonPath("$[2].sku", is("8901")));
     }
 }

@@ -1,19 +1,11 @@
 package org.imedia.store.service;
 
-import org.imedia.store.db.entity.Product;
-import org.imedia.store.db.repository.ProductRepository;
 import org.imedia.store.domain.product.ProductDto;
 import org.imedia.store.domain.product.ProductNotFoundException;
-import org.springframework.stereotype.Service;
 
-@Service
+import java.util.List;
 
-public class ProductService {
-    private final ProductRepository productRepository;
-
-    public ProductService(ProductRepository productRepository) {
-        this.productRepository = productRepository;
-    }
+public interface ProductService {
 
     /**
      * Get product by SKU
@@ -22,23 +14,13 @@ public class ProductService {
      * @return the product DTO
      * @throws ProductNotFoundException if product not found
      */
-
-    public ProductDto getProductBySku(String sku) {
-        Product product = productRepository.findById(sku)
-                .orElseThrow(() -> new ProductNotFoundException(sku));
-
-        return convertToDto(product);
-    }
+    ProductDto getProductBySku(String sku);
 
     /**
-     * Convert Product entity to ProductDto
+     * Get multiple products by SKUs
+     *
+     * @param skus list of product SKUs
+     * @return list of product DTOs
      */
-    private ProductDto convertToDto(Product product) {
-        return new ProductDto(
-                product.getSku(),
-                product.getName(),
-                product.getDescription(),
-                product.getPrice()
-        );
-    }
+    List<ProductDto> getProductsBySkus(List<String> skus);
 }
