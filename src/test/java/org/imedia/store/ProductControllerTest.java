@@ -50,7 +50,8 @@ public class ProductControllerTest {
                 testSku,
                 "Test Product",
                 "Test Description",
-                new BigDecimal("19.99")
+                new BigDecimal("19.99"),
+                100
         );
 
         when(productService.getProductBySku(testSku)).thenReturn(productDto);
@@ -62,7 +63,8 @@ public class ProductControllerTest {
                 .andExpect(jsonPath("$.sku", is(testSku)))
                 .andExpect(jsonPath("$.name", is("Test Product")))
                 .andExpect(jsonPath("$.description", is("Test Description")))
-                .andExpect(jsonPath("$.price", is(19.99)));
+                .andExpect(jsonPath("$.price", is(19.99)))
+                .andExpect(jsonPath("$.stockQuantity", is(100)));
     }
 
     @Test
@@ -84,9 +86,9 @@ public class ProductControllerTest {
         // Arrange
         List<String> testSkus = Arrays.asList("123", "4567", "8901");
 
-        ProductDto product1 = new ProductDto("123", "Product 1", "Description 1", new BigDecimal("19.99"));
-        ProductDto product2 = new ProductDto("4567", "Product 2", "Description 2", new BigDecimal("29.99"));
-        ProductDto product3 = new ProductDto("8901", "Product 3", "Description 3", new BigDecimal("39.99"));
+        ProductDto product1 = new ProductDto("123", "Product 1", "Description 1", new BigDecimal("19.99"),100);
+        ProductDto product2 = new ProductDto("4567", "Product 2", "Description 2", new BigDecimal("29.99"),200);
+        ProductDto product3 = new ProductDto("8901", "Product 3", "Description 3", new BigDecimal("39.99"),300);
 
         List<ProductDto> products = Arrays.asList(product1, product2, product3);
 
