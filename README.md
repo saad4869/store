@@ -122,3 +122,8 @@ Run unit tests with:
 ```bash
 mvn test
 ```
+
+## API Documentation
+
+Access the API documentation by running the application and navigating to:
+http://localhost:8080/swagger-ui.html 
